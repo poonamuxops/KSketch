@@ -1,0 +1,23 @@
+{
+  "name": "KSketch",
+  "description": "Kronos Sketch Plugin",
+  "author": "Dory Azar <dory.azar@kronos.com>",
+  "version": "1.0.0",
+  "engines": {
+    "sketch": ">=3.0"
+  },
+  "skpm": {
+    "name": "KSketch",
+    "manifest": "src/manifest.json",
+    "main": "plugin.sketchplugin"
+  },
+  "scripts": {
+    "build": "skpm-build",
+    "watch": "skpm-build --watch",
+    "start": "skpm-build --watch --run",
+    "postinstall": "npm run build && skpm-link"
+  },
+  "devDependencies": {
+    "@skpm/builder": "^0.4.0"
+  }
+}

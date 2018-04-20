@@ -1,0 +1,12 @@
+{
+  "identifier": "KSketch",
+  "compatibleVersion": 3,
+  "bundleVersion": 1,
+  "commands": [
+    {
+      "script": "main.js",
+      "name": "KSketch",
+      "identifier": "KSketch-main"
+    }
+  ]
+}
