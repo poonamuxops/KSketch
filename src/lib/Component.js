@@ -109,7 +109,7 @@ class Component {
                 sketch.export(artboards, {
                     scales: scalelist,
                     formats: formats,
-                    output: '~/Documents/SketchExports'
+                    output: '~/Documents/SketchExports/' + this.page.name
                 });
           }  
             
@@ -131,7 +131,7 @@ class Component {
                 }
             }
             if (artboards) {
-                const options = { scales: scalelist, formats: formats, output: '~/Documents/SketchExports'};
+                const options = { scales: scalelist, formats: formats, output: '~/Documents/SketchExports/' + this.page.name};
                 sketch.export(artboards, options);
             }
         }
