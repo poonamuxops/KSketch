@@ -1,0 +1,24 @@
+{
+  "identifier": "KSketch",
+  "compatibleVersion": 3,
+  "bundleVersion": 1,
+  "commands": [
+    {
+      "script": "main.js",
+      "name": "KSketch",
+      "identifier": "KSketch-main"
+    },
+    {
+      "script": "ExportArtboards.js",
+      "name": "Export selected artboards",
+      "identifier": "exportartboards"
+    }
+  ],
+  "version": "1.0.0",
+  "description": "Kronos Sketch Plugin",
+  "name": "KSketch",
+  "disableCocoaScriptPreprocessor": true,
+  "appcast": "https://raw.githubusercontent.com//master/.appcast.xml",
+  "author": "Dory Azar",
+  "authorEmail": "dory.azar@kronos.com"
+}
