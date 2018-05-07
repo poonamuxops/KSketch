@@ -11,7 +11,14 @@
     {
       "script": "ExportArtboards.js",
       "name": "Export selected artboards",
+      "shortcut": "command shift x",
       "identifier": "exportartboards"
+    },
+    {
+      "script": "PrepareFor.js",
+      "name": "Prepare for...",
+      "shortcut": "command shift p",
+      "identifier": "preparefor"
     }
   ],
   "version": "1.0.0",

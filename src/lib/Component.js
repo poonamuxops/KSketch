@@ -5,6 +5,7 @@ const Rectangle = sketch.Rectangle;
 const Shape = sketch.Shape;
 const Style = sketch.Style;
 const Text = sketch.Text;
+const Group = sketch.Group;
 
 class Component {
     
@@ -111,28 +112,70 @@ class Component {
         var artboards = this.getArtboards();
 
         for (var i= 0; i < artboards.length; i++) {
-            if (i == 0) { // for the first element don't adjust position
-                artboards[i].frame = { width: newWidth,
-                                       height: newHeight 
-                };
-            }  else { // move the artboards upon resize
-                artboards[i].frame = { x: (artboards[i].frame.y == artboards[i-1].frame.y || (artboards[i].frame.y != artboards[i-1].frame.y && artboards[i].frame.x != artboards[i-1].frame.x ))? artboards[i-1].frame.x + artboards[i-1].frame.width + 50: artboards[i].frame.x,
-                                       y: (artboards[i].frame.x == artboards[i-1].frame.x || (artboards[i].frame.y != artboards[i-1].frame.y && artboards[i].frame.x != artboards[i-1].frame.x ))? artboards[i-1].frame.y + artboards[i-1].frame.height + 50: artboards[i].frame.y,
-                                       width: newWidth,
-                                       height: newHeight 
-                };                     
+            if (artboards[i].frame.width != newWidth && artboards[i].frame.height != newHeight) {
+                if (i == 0) { // for the first element don't adjust position
+                    artboards[i].frame = { width: newWidth,
+                                           height: newHeight 
+                    };
+                }  else { // move the artboards upon resize
+                    artboards[i].frame = { x: (artboards[i].frame.y == artboards[i-1].frame.y || (artboards[i].frame.y != artboards[i-1].frame.y && artboards[i].frame.x != artboards[i-1].frame.x ))? artboards[i-1].frame.x + artboards[i-1].frame.width + 50: artboards[i].frame.x,
+                                           y: (artboards[i].frame.x == artboards[i-1].frame.x || (artboards[i].frame.y != artboards[i-1].frame.y && artboards[i].frame.x != artboards[i-1].frame.x ))? artboards[i-1].frame.y + artboards[i-1].frame.height + 50: artboards[i].frame.y,
+                                           width: newWidth,
+                                           height: newHeight 
+                    };                     
 
-            }
-            this.selectedCanva = artboards[i];
-            for (var element in artboards[i].layers) { // add the necessary clearance for documentation
-                artboards[i].layers[element].parent = this.selectedCanva;
-                artboards[i].layers[element].frame = {x: artboards[i].layers[element].frame.x + clearanceWidth, 
-                      y: artboards[i].layers[element].frame.y + clearanceHeight, 
-                      width: artboards[i].layers[element].frame.width, 
-                      height: artboards[i].layers[element].frame.height }
+                }
+                this.selectedCanva = artboards[i];
+                for (var element in artboards[i].layers) { // add the necessary clearance for documentation
+                    artboards[i].layers[element].parent = this.selectedCanva;
+                    artboards[i].layers[element].frame = {x: artboards[i].layers[element].frame.x + clearanceWidth, 
+                          y: artboards[i].layers[element].frame.y + clearanceHeight, 
+                          width: artboards[i].layers[element].frame.width, 
+                          height: artboards[i].layers[element].frame.height }
+                }
+                
             }
         }
     }
+    
+    prepareForDocumentation() {
+        this.resizeArtboard(1200, 700);
+        this.showAnnotations();
+    }
+    
+    prepareForPrototype() {
+        this.hideAnnotations();
+        this.ArtboardToFit();
+    }
+    
+    /* ----------------- Accessors ------------------ */
+    
+    /* Hide Annotations 
+    * Hides all annotations from all artboards or from selected artboards only
+    */
+    hideAnnotations() {
+        var annotations = this.getAnnotations();
+        for (annotation in annotations) {
+            if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
+                annotations[annotation].frame = {width: annotations[annotation].frame.width/1000000, height: annotations[annotation].frame.height/1000000};
+            }
+        }
+    }
+    
+    
+    /* Show Annotations
+    * Shows all annotations from all artboards or from selected artboards only
+    */
+    showAnnotations() {
+        var annotations = this.getAnnotations();
+        for (annotation in annotations) {
+            if (annotations[annotation].frame.width < 1 && annotations[annotation].frame.height < 1) {
+                annotations[annotation].frame = {width: annotations[annotation].frame.width*1000000, height: annotations[annotation].frame.height*1000000};
+            }
+        }
+    }
+    
+    
     
     /* Adjust Artboard to fit the content of its children
     * Returns: all artboards fit to the content of their children
@@ -150,7 +193,7 @@ class Component {
     /* Get Selected Artboards
     * Returns: all artboards if no artboard is selected or the selected artboards
     */
-    getArtboards() {
+    getArtboards(selectedOnly = false) {
         var artboards = [];
         var artboardsAll = [];
         var layers = this.page.layers;
@@ -163,7 +206,40 @@ class Component {
                 }
             }
         }
-        if (artboards.length == 0) { return artboardsAll; } else { return artboards; }
+        if (artboards.length != 0 || selectedOnly) { return artboards; } else { return artboardsAll; }
+    }
+    
+    /* Gets annotations in a selection or the whole document
+    * Returns: annotations in a selection or all the annotations in a document
+    */
+    getAnnotations() {
+        var artboards = this.getArtboards();
+        var annotations = [];
+        for (element in artboards) {
+            this.selectedCanva = artboards[element];
+            for (symbol in artboards[element].layers) {
+                if(artboards[element].layers[symbol].name.includes("Annotation")) {
+                    annotations.push(artboards[element].layers[symbol]);
+                }
+            } 
+        }
+        return annotations;
+       
+    }
+    
+    
+    /* Create Group
+    * name: desired name of the group
+    * layers: layers that need to be grouped
+    * Returns: returns the group to be used
+    */
+    createGroup(name, layers) {
+        var group = new Group({
+           parent: this.selectedCanva,
+           name: name,
+           layers: layers
+        });
+        return group;
     }
     
     /* Checks if layer is an artboard

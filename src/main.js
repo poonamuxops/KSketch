@@ -25,7 +25,10 @@ export default function(context) {
     //mysketch.exportArtboards('png');
     //mysketch.exportPage('2, 3, 4', 'png');
     
-    mysketch.resizeArtboard(1000, 600);
-    //mysketch.ArtboardToFit();
+    mysketch.resizeArtboard(1200, 700);
+    //mysketch.getAnnotations();
+    mysketch.showAnnotations();
+    mysketch.hideAnnotations();
+    mysketch.showAnnotations();
     
 }
