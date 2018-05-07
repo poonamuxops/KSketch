@@ -87,7 +87,7 @@ exports['default'] = function (context) {
     var mysketch = new Component(context);
 
     var scales = sketch.UI.getStringFromUser('Enter image scales separated by comas', 'example: 1, 2, 3');
-    var formats = sketch.UI.getStringFromUser('Enter image formats separated by comas', 'example: png, jpeg, jpg');
+    var formats = sketch.UI.getStringFromUser('Enter image formats separated by comas', 'example: png, jpg, pdf, svg');
     mysketch.exportArtboards(scales, formats);
 };
 
@@ -225,65 +225,120 @@ var Component = function () {
         key: 'exportArtboards',
         value: function () {
             function exportArtboards(scalelist, formats) {
-                var selectedLayers = this.context.selection;
-                var selectedCount = selectedLayers.count();
-                var artboards = [];
-                var classCheck = true;
 
-                if (selectedCount == 0) {
-                    selectedLayers = this.page.layers;
-                    selectedCount = selectedLayers.length;
-                    classCheck = false;
-                }
-                if (selectedCount != 0) {
-
-                    for (var i = 0; i < selectedCount; i++) {
-                        if (this.isArtboard(selectedLayers[i], classCheck)) {
-                            artboards.push(selectedLayers[i]);
-                        }
-                    }
-                    if (artboards) {
-                        sketch['export'](artboards, {
-                            scales: scalelist,
-                            formats: formats,
-                            output: '~/Documents/SketchExports/' + this.page.name
-                        });
-                    }
+                var artboards = this.getArtboards();
+                if (artboards) {
+                    sketch['export'](artboards, {
+                        scales: scalelist,
+                        formats: formats,
+                        output: '~/Documents/SketchExports/' + this.page.name
+                    });
                 }
             }
 
             return exportArtboards;
         }() // end function
 
-        /* Export all the artboards in a page
-        * scalelist: takes a list of desired scaling in the form ('1,2, 3, etc') for x1, x2, x3 etc.
-        * formats: provide a list of the desired formats in the form ('png, gif, so on')
+
+        /* Resize Artboards
+        * newWidth: takes the new desired width of the artboards
+        * newHeight: the new desired height of the artboards
+        * clearanceWidth: leaves horizontal margins from the left - defaulted to 100
+        * clearanceHeight: vertical margins from the top - defaulted to 50
+        * Returns: all artboards if no artboard is selected or the selected artboards
         */
 
     }, {
-        key: 'exportPage',
+        key: 'resizeArtboard',
         value: function () {
-            function exportPage(scalelist, formats) {
+            function resizeArtboard(newWidth, newHeight) {
+                var clearanceWidth = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 100;
+                var clearanceHeight = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 50;
 
-                var layers = this.page.layers;
-                var artboards = [];
-                if (layers.length != 0) {
-                    for (var i = 0; i < layers.length; i++) {
-                        if (this.isArtboard(layers[i])) {
-                            artboards.push(layers[i]);
-                        }
+                var artboards = this.getArtboards();
+
+                for (var i = 0; i < artboards.length; i++) {
+                    if (i == 0) {
+                        // for the first element don't adjust position
+                        artboards[i].frame = { width: newWidth,
+                            height: newHeight
+                        };
+                    } else {
+                        // move the artboards upon resize
+                        artboards[i].frame = { x: artboards[i].frame.y == artboards[i - 1].frame.y || artboards[i].frame.y != artboards[i - 1].frame.y && artboards[i].frame.x != artboards[i - 1].frame.x ? artboards[i - 1].frame.x + artboards[i - 1].frame.width + 50 : artboards[i].frame.x,
+                            y: artboards[i].frame.x == artboards[i - 1].frame.x || artboards[i].frame.y != artboards[i - 1].frame.y && artboards[i].frame.x != artboards[i - 1].frame.x ? artboards[i - 1].frame.y + artboards[i - 1].frame.height + 50 : artboards[i].frame.y,
+                            width: newWidth,
+                            height: newHeight
+                        };
                     }
-                    if (artboards) {
-                        var options = { scales: scalelist, formats: formats, output: '~/Documents/SketchExports/' + this.page.name };
-                        sketch['export'](artboards, options);
+                    this.selectedCanva = artboards[i];
+                    for (var element in artboards[i].layers) {
+                        // add the necessary clearance for documentation
+                        artboards[i].layers[element].parent = this.selectedCanva;
+                        artboards[i].layers[element].frame = { x: artboards[i].layers[element].frame.x + clearanceWidth,
+                            y: artboards[i].layers[element].frame.y + clearanceHeight,
+                            width: artboards[i].layers[element].frame.width,
+                            height: artboards[i].layers[element].frame.height };
                     }
                 }
             }
 
-            return exportPage;
+            return resizeArtboard;
         }()
 
-        // Check if layer is an artboard
+        /* Adjust Artboard to fit the content of its children
+        * Returns: all artboards fit to the content of their children
+        */
+
+    }, {
+        key: 'ArtboardToFit',
+        value: function () {
+            function ArtboardToFit() {
+                var artboards = this.getArtboards();
+                for (element in artboards) {
+                    this.selectedCanva = artboards[element];
+                    this.selectedCanva.adjustToFit();
+                }
+            }
+
+            return ArtboardToFit;
+        }()
+
+        /* Get Selected Artboards
+        * Returns: all artboards if no artboard is selected or the selected artboards
+        */
+
+    }, {
+        key: 'getArtboards',
+        value: function () {
+            function getArtboards() {
+                var artboards = [];
+                var artboardsAll = [];
+                var layers = this.page.layers;
+                var layersCount = layers.length;
+                for (var i = 0; i < layersCount; i++) {
+                    if (layers[i].type == 'Artboard') {
+                        artboardsAll.push(layers[i]);
+                        if (layers[i].selected) {
+                            artboards.push(layers[i]);
+                        }
+                    }
+                }
+                if (artboards.length == 0) {
+                    return artboardsAll;
+                } else {
+                    return artboards;
+                }
+            }
+
+            return getArtboards;
+        }()
+
+        /* Checks if layer is an artboard
+        * layer: layer object
+        * classCheck: if true checks if it is an MSArtboardGroup class, if false checks if it's an "Artboard" type. Depending on the object, it might need one or the other
+        * Returns: true if it's an artboard
+        */
 
     }, {
         key: 'isArtboard',
@@ -309,7 +364,7 @@ var Component = function () {
     }]);
 
     return Component;
-}();
+}(); // end class
 
 module.exports = Component;
 

@@ -24,5 +24,8 @@ export default function(context) {
     
     //mysketch.exportArtboards('png');
     //mysketch.exportPage('2, 3, 4', 'png');
-
+    
+    mysketch.resizeArtboard(1000, 600);
+    //mysketch.ArtboardToFit();
+    
 }

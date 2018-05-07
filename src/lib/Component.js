@@ -88,57 +88,89 @@ class Component {
     * formats: provide a list of the desired formats in the form ('png, gif, so on')
     */
     exportArtboards(scalelist, formats) {
-        var selectedLayers = this.context.selection;
-        var selectedCount = selectedLayers.count();
-        var artboards = [];
-        var classCheck = true;
-
-        if (selectedCount == 0) {
-          selectedLayers = this.page.layers;
-          selectedCount = selectedLayers.length;
-          classCheck = false;
-        } 
-        if (selectedCount != 0) {
-            
-          for (var i = 0; i < selectedCount; i++) {
-            if(this.isArtboard(selectedLayers[i], classCheck)) {
-                artboards.push(selectedLayers[i]);
-            }
-          }
-          if(artboards) {
+        
+        var artboards = this.getArtboards();
+        if(artboards) {
                 sketch.export(artboards, {
                     scales: scalelist,
                     formats: formats,
                     output: '~/Documents/SketchExports/' + this.page.name
                 });
           }  
-            
-        }
     } // end function
     
-    /* Export all the artboards in a page
-    * scalelist: takes a list of desired scaling in the form ('1,2, 3, etc') for x1, x2, x3 etc.
-    * formats: provide a list of the desired formats in the form ('png, gif, so on')
+    
+    /* Resize Artboards
+    * newWidth: takes the new desired width of the artboards
+    * newHeight: the new desired height of the artboards
+    * clearanceWidth: leaves horizontal margins from the left - defaulted to 100
+    * clearanceHeight: vertical margins from the top - defaulted to 50
+    * Returns: all artboards if no artboard is selected or the selected artboards
     */
-    exportPage(scalelist, formats) {
+    resizeArtboard(newWidth, newHeight, clearanceWidth = 100, clearanceHeight = 50) {
+        var artboards = this.getArtboards();
 
-        var layers = this.page.layers;
+        for (var i= 0; i < artboards.length; i++) {
+            if (i == 0) { // for the first element don't adjust position
+                artboards[i].frame = { width: newWidth,
+                                       height: newHeight 
+                };
+            }  else { // move the artboards upon resize
+                artboards[i].frame = { x: (artboards[i].frame.y == artboards[i-1].frame.y || (artboards[i].frame.y != artboards[i-1].frame.y && artboards[i].frame.x != artboards[i-1].frame.x ))? artboards[i-1].frame.x + artboards[i-1].frame.width + 50: artboards[i].frame.x,
+                                       y: (artboards[i].frame.x == artboards[i-1].frame.x || (artboards[i].frame.y != artboards[i-1].frame.y && artboards[i].frame.x != artboards[i-1].frame.x ))? artboards[i-1].frame.y + artboards[i-1].frame.height + 50: artboards[i].frame.y,
+                                       width: newWidth,
+                                       height: newHeight 
+                };                     
+
+            }
+            this.selectedCanva = artboards[i];
+            for (var element in artboards[i].layers) { // add the necessary clearance for documentation
+                artboards[i].layers[element].parent = this.selectedCanva;
+                artboards[i].layers[element].frame = {x: artboards[i].layers[element].frame.x + clearanceWidth, 
+                      y: artboards[i].layers[element].frame.y + clearanceHeight, 
+                      width: artboards[i].layers[element].frame.width, 
+                      height: artboards[i].layers[element].frame.height }
+            }
+        }
+    }
+    
+    /* Adjust Artboard to fit the content of its children
+    * Returns: all artboards fit to the content of their children
+    */
+    ArtboardToFit() {
+        var artboards = this.getArtboards();
+        for (element in artboards) {
+            this.selectedCanva = artboards[element];
+            this.selectedCanva.adjustToFit();    
+        }
+    }
+    
+
+
+    /* Get Selected Artboards
+    * Returns: all artboards if no artboard is selected or the selected artboards
+    */
+    getArtboards() {
         var artboards = [];
-        if (layers.length != 0) {
-            for (var i=0; i < layers.length; i++) {
-                if (this.isArtboard(layers[i])) {
+        var artboardsAll = [];
+        var layers = this.page.layers;
+        var layersCount = layers.length;
+        for (var i =0; i < layersCount; i++) {
+            if(layers[i].type == 'Artboard') {
+                artboardsAll.push(layers[i]);
+                if (layers[i].selected) {
                     artboards.push(layers[i]);
                 }
             }
-            if (artboards) {
-                const options = { scales: scalelist, formats: formats, output: '~/Documents/SketchExports/' + this.page.name};
-                sketch.export(artboards, options);
-            }
         }
-
+        if (artboards.length == 0) { return artboardsAll; } else { return artboards; }
     }
     
-    // Check if layer is an artboard
+    /* Checks if layer is an artboard
+    * layer: layer object
+    * classCheck: if true checks if it is an MSArtboardGroup class, if false checks if it's an "Artboard" type. Depending on the object, it might need one or the other
+    * Returns: true if it's an artboard
+    */
     isArtboard(layer, classCheck = true) {
         var type = '';
         if (classCheck) { type = layer.class(); } else { type = layer.type; }
@@ -149,6 +181,8 @@ class Component {
             return false;
         }
     }
-}
+        
+        
+} // end class
 
 module.exports = Component;
