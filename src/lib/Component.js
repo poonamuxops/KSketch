@@ -132,7 +132,7 @@ class Component {
     * Returns: Arranges the artboards in order of creation
     */
     arrangeArtboards() {
-        var artboards = this.getElement('Artboard');
+        var artboards = this.getElement('Artboard', false);
         var maxHeight = 0;
         var x = 0;
         var y = 0;
@@ -142,7 +142,7 @@ class Component {
            if (index == 0) {
                maxHeight = artboards[index].frame.height;
                x = (artboards[index].index == 1)? 0: artboards[index].x;
-               x = (artboards[index].index == 1)? 0: artboards[index].y;
+               y = (artboards[index].index == 1)? 0: artboards[index].y;
            }
            else  {
                if (artboards[index].frame.height > maxHeight) { maxHeight = artboards[index].frame.height };
@@ -181,9 +181,7 @@ class Component {
         this.page.layers.forEach(layer => {
             if (layer.layers) {
                 layer.layers.forEach(element=> {
-                    //if (element.name.includes("Annotation")) {
-                    if(!element.hidden) { log('hello');} else {log('what');}
-                    //}
+                    log(element);
                 })
             }
   
@@ -239,13 +237,13 @@ class Component {
     * type: Artboard or other component
     * Returns: all artboards if no artboard is selected or the selected artboards
     */
-    getElement(type) {
+    getElement(type, selectedOnly = true) {
         var artboards = [];
         var artboardsAll = [];
         this.page.layers.forEach(layer=> {
             if (layer.type == type) {
                 artboardsAll.push(layer);
-                if (layer.selected) {
+                if (layer.selected && selectedOnly) {
                     artboards.push(layer);
                 }
             }

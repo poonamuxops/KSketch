@@ -284,7 +284,7 @@ var Component = function () {
         key: 'arrangeArtboards',
         value: function () {
             function arrangeArtboards() {
-                var artboards = this.getElement('Artboard');
+                var artboards = this.getElement('Artboard', false);
                 var maxHeight = 0;
                 var x = 0;
                 var y = 0;
@@ -436,12 +436,14 @@ var Component = function () {
         key: 'getElement',
         value: function () {
             function getElement(type) {
+                var selectedOnly = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
                 var artboards = [];
                 var artboardsAll = [];
                 this.page.layers.forEach(function (layer) {
                     if (layer.type == type) {
                         artboardsAll.push(layer);
-                        if (layer.selected) {
+                        if (layer.selected && selectedOnly) {
                             artboards.push(layer);
                         }
                     }
