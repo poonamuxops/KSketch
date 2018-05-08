@@ -2,7 +2,7 @@
   "name": "KSketch",
   "description": "Kronos Sketch Plugin",
   "author": "Dory Azar <dory.azar@kronos.com>",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "engines": {
     "sketch": ">=3.0"
   },

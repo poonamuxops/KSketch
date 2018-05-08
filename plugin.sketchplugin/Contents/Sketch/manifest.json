@@ -27,7 +27,7 @@
       "identifier": "arrange"
     }
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Kronos Sketch Plugin",
   "name": "KSketch",
   "disableCocoaScriptPreprocessor": true,
