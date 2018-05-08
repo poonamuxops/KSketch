@@ -126,16 +126,6 @@ var Component = function () {
         // Next we want to extract the selected page of the selected (front-most) document
         this.page = this.document.selectedPage;
         this.selectedCanva = this.page;
-
-        // Check if there is an artboard selected
-        var selection = context.selection;
-        if (selection.count() != 0) {
-            for (var i = 0; i < selection.count(); i++) {
-                if (this.isArtboard(selection[i])) {
-                    this.selectedCanva = selection[i];
-                }
-            }
-        }
     }
 
     /* Add an artboard and select it upon creation
@@ -227,7 +217,7 @@ var Component = function () {
         value: function () {
             function exportArtboards(scalelist, formats) {
 
-                var artboards = this.getArtboards();
+                var artboards = this.getElement('Artboard');
                 if (artboards) {
                     sketch['export'](artboards, {
                         scales: scalelist,
@@ -256,7 +246,7 @@ var Component = function () {
                 var clearanceWidth = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 100;
                 var clearanceHeight = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 50;
 
-                var artboards = this.getArtboards();
+                var artboards = this.getElement('Artboard');
 
                 for (var i = 0; i < artboards.length; i++) {
                     if (artboards[i].frame.width != newWidth && artboards[i].frame.height != newHeight) {
@@ -287,6 +277,38 @@ var Component = function () {
             }
 
             return resizeArtboard;
+        }()
+
+        /* Arrange Artboards 
+        * Returns: Arranges the artboards in order of creation
+        */
+
+    }, {
+        key: 'arrangeArtboards',
+        value: function () {
+            function arrangeArtboards() {
+                var artboards = this.getElement('Artboard');
+                var maxHeight = 0;
+                var x = 0;
+                var y = 0;
+                var col = 0;
+                artboards.forEach(function (artboard, index) {
+                    col++;
+                    if (index == 0) {
+                        maxHeight = artboards[index].frame.height;
+                    } else {
+                        if (artboards[index].frame.height > maxHeight) {
+                            maxHeight = artboards[index].frame.height;
+                        };
+                        x = col % 7 != 0 ? artboards[index - 1].frame.x + artboards[index - 1].frame.width + 100 : 0;
+                        y = col % 7 != 0 ? artboards[index - 1].frame.y : maxHeight + 100;
+                    }
+                    artboards[index].frame = { x: x,
+                        y: y };
+                });
+            }
+
+            return arrangeArtboards;
         }()
     }, {
         key: 'prepareForDocumentation',
@@ -321,9 +343,11 @@ var Component = function () {
             function hideAnnotations() {
                 var annotations = this.getAnnotations();
                 for (annotation in annotations) {
-                    if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
-                        annotations[annotation].frame = { width: annotations[annotation].frame.width / 1000000, height: annotations[annotation].frame.height / 1000000 };
-                    }
+                    /*if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
+                        annotations[annotation].frame = {width: annotations[annotation].frame.width/1000000, height: annotations[annotation].frame.height/1000000};
+                    }*/
+                    annotations[annotation].isVisible = false;
+                    log(annotations[annotation]);
                 }
             }
 
@@ -357,7 +381,7 @@ var Component = function () {
         key: 'ArtboardToFit',
         value: function () {
             function ArtboardToFit() {
-                var artboards = this.getArtboards();
+                var artboards = this.getElement('Artboard');
                 for (element in artboards) {
                     this.selectedCanva = artboards[element];
                     this.selectedCanva.adjustToFit();
@@ -365,39 +389,6 @@ var Component = function () {
             }
 
             return ArtboardToFit;
-        }()
-
-        /* Get Selected Artboards
-        * Returns: all artboards if no artboard is selected or the selected artboards
-        */
-
-    }, {
-        key: 'getArtboards',
-        value: function () {
-            function getArtboards() {
-                var selectedOnly = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
-                var artboards = [];
-                var artboardsAll = [];
-                var layers = this.page.layers;
-                //log(layers);
-                var layersCount = layers.length;
-                for (var i = 0; i < layersCount; i++) {
-                    if (layers[i].type == 'Artboard') {
-                        artboardsAll.push(layers[i]);
-                        if (layers[i].selected) {
-                            artboards.push(layers[i]);
-                        }
-                    }
-                }
-                if (artboards.length != 0 || selectedOnly) {
-                    return artboards;
-                } else {
-                    return artboardsAll;
-                }
-            }
-
-            return getArtboards;
         }()
 
         /* Gets annotations in a selection or the whole document
@@ -408,7 +399,7 @@ var Component = function () {
         key: 'getAnnotations',
         value: function () {
             function getAnnotations() {
-                var artboards = this.getArtboards();
+                var artboards = this.getElement('Artboard');
                 var annotations = [];
                 for (element in artboards) {
                     this.selectedCanva = artboards[element];
@@ -422,6 +413,35 @@ var Component = function () {
             }
 
             return getAnnotations;
+        }()
+
+        /* Get Selected Element
+        * type: Artboard or other component
+        * Returns: all artboards if no artboard is selected or the selected artboards
+        */
+
+    }, {
+        key: 'getElement',
+        value: function () {
+            function getElement(type) {
+                var artboards = [];
+                var artboardsAll = [];
+                this.page.layers.forEach(function (layer) {
+                    if (layer.type == type) {
+                        artboardsAll.push(layer);
+                        if (layer.selected) {
+                            artboards.push(layer);
+                        }
+                    }
+                });
+                if (artboards.length != 0) {
+                    return artboards;
+                } else {
+                    return artboardsAll;
+                }
+            }
+
+            return getElement;
         }()
 
         /* Create Group

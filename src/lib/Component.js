@@ -17,16 +17,6 @@ class Component {
         // Next we want to extract the selected page of the selected (front-most) document
         this.page = this.document.selectedPage;
         this.selectedCanva = this.page;
-        
-        // Check if there is an artboard selected
-        var selection = context.selection;
-        if (selection.count() != 0) {
-            for(var i =0; i < selection.count(); i++) {
-                if(this.isArtboard(selection[i])) {
-                    this.selectedCanva = selection[i];
-                }
-            }
-        }
     
     }
     
@@ -90,7 +80,7 @@ class Component {
     */
     exportArtboards(scalelist, formats) {
         
-        var artboards = this.getArtboards();
+        var artboards = this.getElement('Artboard');
         if(artboards) {
                 sketch.export(artboards, {
                     scales: scalelist,
@@ -109,7 +99,7 @@ class Component {
     * Returns: all artboards if no artboard is selected or the selected artboards
     */
     resizeArtboard(newWidth, newHeight, clearanceWidth = 100, clearanceHeight = 50) {
-        var artboards = this.getArtboards();
+        var artboards = this.getElement('Artboard');
 
         for (var i= 0; i < artboards.length; i++) {
             if (artboards[i].frame.width != newWidth && artboards[i].frame.height != newHeight) {
@@ -138,6 +128,30 @@ class Component {
         }
     }
     
+    /* Arrange Artboards 
+    * Returns: Arranges the artboards in order of creation
+    */
+    arrangeArtboards() {
+        var artboards = this.getElement('Artboard');
+        var maxHeight = 0;
+        var x = 0;
+        var y = 0;
+        var col = 0;
+        artboards.forEach((artboard, index) => {
+           col++;
+           if (index == 0) {
+               maxHeight = artboards[index].frame.height;
+           }
+           else  {
+               if (artboards[index].frame.height > maxHeight) { maxHeight = artboards[index].frame.height };
+               x = (col%7 != 0)? artboards[index-1].frame.x + artboards[index-1].frame.width + 100: 0;
+               y = (col%7 != 0)? artboards[index-1].frame.y: maxHeight + 100;
+           }
+           artboards[index].frame = {x: x,
+                                    y: y};
+        });
+    }
+    
     prepareForDocumentation() {
         this.resizeArtboard(1200, 700);
         this.showAnnotations();
@@ -156,9 +170,11 @@ class Component {
     hideAnnotations() {
         var annotations = this.getAnnotations();
         for (annotation in annotations) {
-            if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
+            /*if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
                 annotations[annotation].frame = {width: annotations[annotation].frame.width/1000000, height: annotations[annotation].frame.height/1000000};
-            }
+            }*/
+            annotations[annotation].isVisible = false;
+            log(annotations[annotation]);
         }
     }
     
@@ -181,39 +197,19 @@ class Component {
     * Returns: all artboards fit to the content of their children
     */
     ArtboardToFit() {
-        var artboards = this.getArtboards();
+        var artboards = this.getElement('Artboard');
         for (element in artboards) {
             this.selectedCanva = artboards[element];
             this.selectedCanva.adjustToFit();    
         }
     }
     
-
-
-    /* Get Selected Artboards
-    * Returns: all artboards if no artboard is selected or the selected artboards
-    */
-    getArtboards(selectedOnly = false) {
-        var artboards = [];
-        var artboardsAll = [];
-        var layers = this.page.layers;
-        var layersCount = layers.length;
-        for (var i =0; i < layersCount; i++) {
-            if(layers[i].type == 'Artboard') {
-                artboardsAll.push(layers[i]);
-                if (layers[i].selected) {
-                    artboards.push(layers[i]);
-                }
-            }
-        }
-        if (artboards.length != 0 || selectedOnly) { return artboards; } else { return artboardsAll; }
-    }
     
     /* Gets annotations in a selection or the whole document
     * Returns: annotations in a selection or all the annotations in a document
     */
     getAnnotations() {
-        var artboards = this.getArtboards();
+        var artboards = this.getElement('Artboard');
         var annotations = [];
         for (element in artboards) {
             this.selectedCanva = artboards[element];
@@ -225,6 +221,24 @@ class Component {
         }
         return annotations;
        
+    }
+    
+    /* Get Selected Element
+    * type: Artboard or other component
+    * Returns: all artboards if no artboard is selected or the selected artboards
+    */
+    getElement(type) {
+        var artboards = [];
+        var artboardsAll = [];
+        this.page.layers.forEach(layer=> {
+            if (layer.type == type) {
+                artboardsAll.push(layer);
+                if (layer.selected) {
+                    artboards.push(layer);
+                }
+            }
+        });
+        if (artboards.length != 0) { return artboards; } else { return artboardsAll; }
     }
     
     

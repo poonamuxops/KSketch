@@ -19,6 +19,12 @@
         "name": "Prepare for...",
         "shortcut": "command shift p",
         "identifier": "preparefor"
+    },
+    {
+        "script": "Arrange.js",
+        "name": "Arrange Artboards",
+        "shortcut": "command shift 0",
+        "identifier": "arrange"
     }
   ]
 }
