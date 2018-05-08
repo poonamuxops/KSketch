@@ -104,7 +104,7 @@ exports['default'] = function (context) {
     //mysketch.resizeArtboard(1200, 700);
     //mysketch.getAnnotations();
     //mysketch.showAnnotations();
-    mysketch.hideAnnotations();
+    //mysketch.hideAnnotations();
     // mysketch.showAnnotations();
     //mysketch.getElement('Artboard');
     //mysketch.arrangeArtboards();
@@ -316,6 +316,8 @@ var Component = function () {
                     col++;
                     if (index == 0) {
                         maxHeight = artboards[index].frame.height;
+                        x = artboards[index].index == 1 ? 0 : artboards[index].x;
+                        x = artboards[index].index == 1 ? 0 : artboards[index].y;
                     } else {
                         if (artboards[index].frame.height > maxHeight) {
                             maxHeight = artboards[index].frame.height;
@@ -335,7 +337,8 @@ var Component = function () {
         value: function () {
             function prepareForDocumentation() {
                 this.resizeArtboard(1200, 700);
-                this.showAnnotations();
+                //this.showAnnotations();
+                this.arrangeArtboards();
             }
 
             return prepareForDocumentation;
@@ -344,8 +347,9 @@ var Component = function () {
         key: 'prepareForPrototype',
         value: function () {
             function prepareForPrototype() {
-                this.hideAnnotations();
+                //this.hideAnnotations();
                 this.ArtboardToFit();
+                this.arrangeArtboards();
             }
 
             return prepareForPrototype;
@@ -361,14 +365,25 @@ var Component = function () {
         key: 'hideAnnotations',
         value: function () {
             function hideAnnotations() {
-                var annotations = this.getAnnotations();
+                /*var annotations = this.getAnnotations();
                 for (annotation in annotations) {
-                    /*if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
+                    if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
                         annotations[annotation].frame = {width: annotations[annotation].frame.width/1000000, height: annotations[annotation].frame.height/1000000};
-                    }*/
-                    annotations[annotation].isVisible = false;
-                    log(annotations[annotation]);
-                }
+                    }
+                }*/
+                this.page.layers.forEach(function (layer) {
+                    if (layer.layers) {
+                        layer.layers.forEach(function (element) {
+                            //if (element.name.includes("Annotation")) {
+                            if (!element.hidden) {
+                                log('hello');
+                            } else {
+                                log('what');
+                            }
+                            //}
+                        });
+                    }
+                });
             }
 
             return hideAnnotations;

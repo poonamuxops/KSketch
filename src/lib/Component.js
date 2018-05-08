@@ -141,6 +141,8 @@ class Component {
            col++;
            if (index == 0) {
                maxHeight = artboards[index].frame.height;
+               x = (artboards[index].index == 1)? 0: artboards[index].x;
+               x = (artboards[index].index == 1)? 0: artboards[index].y;
            }
            else  {
                if (artboards[index].frame.height > maxHeight) { maxHeight = artboards[index].frame.height };
@@ -154,12 +156,14 @@ class Component {
     
     prepareForDocumentation() {
         this.resizeArtboard(1200, 700);
-        this.showAnnotations();
+        //this.showAnnotations();
+        this.arrangeArtboards();
     }
     
     prepareForPrototype() {
-        this.hideAnnotations();
+        //this.hideAnnotations();
         this.ArtboardToFit();
+        this.arrangeArtboards();
     }
     
     /* ----------------- Accessors ------------------ */
@@ -168,14 +172,22 @@ class Component {
     * Hides all annotations from all artboards or from selected artboards only
     */
     hideAnnotations() {
-        var annotations = this.getAnnotations();
+        /*var annotations = this.getAnnotations();
         for (annotation in annotations) {
-            /*if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
+            if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
                 annotations[annotation].frame = {width: annotations[annotation].frame.width/1000000, height: annotations[annotation].frame.height/1000000};
-            }*/
-            annotations[annotation].isVisible = false;
-            log(annotations[annotation]);
-        }
+            }
+        }*/
+        this.page.layers.forEach(layer => {
+            if (layer.layers) {
+                layer.layers.forEach(element=> {
+                    //if (element.name.includes("Annotation")) {
+                    if(!element.hidden) { log('hello');} else {log('what');}
+                    //}
+                })
+            }
+  
+        });
     }
     
     

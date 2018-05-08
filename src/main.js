@@ -28,7 +28,7 @@ export default function(context) {
     //mysketch.resizeArtboard(1200, 700);
     //mysketch.getAnnotations();
     //mysketch.showAnnotations();
-    mysketch.hideAnnotations();
+    //mysketch.hideAnnotations();
    // mysketch.showAnnotations();
     //mysketch.getElement('Artboard');
     //mysketch.arrangeArtboards();
