@@ -29,8 +29,10 @@ export default function(context) {
     //mysketch.getAnnotations();
     //mysketch.showAnnotations();
     //mysketch.hideAnnotations();
-   // mysketch.showAnnotations();
+    //mysketch.showAnnotations();
     //mysketch.getElement('Artboard');
     //mysketch.arrangeArtboards();
+    //mysketch.findElement('Annotations');
+    //mysketch.groupAnnotations();
     
 }

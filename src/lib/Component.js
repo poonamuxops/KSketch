@@ -141,8 +141,6 @@ class Component {
            col++;
            if (index == 0) {
                maxHeight = artboards[index].frame.height;
-               x = (artboards[index].index == 1)? 0: artboards[index].x;
-               y = (artboards[index].index == 1)? 0: artboards[index].y;
            }
            else  {
                if (artboards[index].frame.height > maxHeight) { maxHeight = artboards[index].frame.height };
@@ -156,12 +154,12 @@ class Component {
     
     prepareForDocumentation() {
         this.resizeArtboard(1200, 700);
-        //this.showAnnotations();
         this.arrangeArtboards();
+        this.showAnnotations();
     }
     
     prepareForPrototype() {
-        //this.hideAnnotations();
+        this.hideAnnotations();
         this.ArtboardToFit();
         this.arrangeArtboards();
     }
@@ -172,19 +170,14 @@ class Component {
     * Hides all annotations from all artboards or from selected artboards only
     */
     hideAnnotations() {
-        /*var annotations = this.getAnnotations();
-        for (annotation in annotations) {
-            if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
-                annotations[annotation].frame = {width: annotations[annotation].frame.width/1000000, height: annotations[annotation].frame.height/1000000};
-            }
-        }*/
-        this.page.layers.forEach(layer => {
-            if (layer.layers) {
-                layer.layers.forEach(element=> {
-                    log(element);
-                })
-            }
-  
+        var ungroupedAnnotations = this.getAnnotations();
+        var groupedAnnotations = this.findElement('Annotations');
+        
+        groupedAnnotations.forEach(annotation => {
+            annotation.hidden = true;
+        }); 
+        ungroupedAnnotations.forEach(annotation => {
+            annotation.hidden = true;
         });
     }
     
@@ -193,12 +186,17 @@ class Component {
     * Shows all annotations from all artboards or from selected artboards only
     */
     showAnnotations() {
-        var annotations = this.getAnnotations();
-        for (annotation in annotations) {
-            if (annotations[annotation].frame.width < 1 && annotations[annotation].frame.height < 1) {
-                annotations[annotation].frame = {width: annotations[annotation].frame.width*1000000, height: annotations[annotation].frame.height*1000000};
-            }
-        }
+        var ungroupedAnnotations = this.getAnnotations();
+        var groupedAnnotations = this.findElement('Annotations');
+        
+        groupedAnnotations.forEach(annotation => {
+            annotation.hidden = false;
+            annotation.moveToFront();
+        }); 
+        ungroupedAnnotations.forEach(annotation => {
+            annotation.hidden = false;
+            annotation.moveToFront();
+        });       
     }
     
     
@@ -233,22 +231,32 @@ class Component {
        
     }
     
+    
+    /* Finds a layer by name
+    * Returns: array of results
+    */
+    findElement(name) {
+        var results = [];
+        results = this.document.getLayersNamed(name);
+        return results;
+    }
+    
     /* Get Selected Element
     * type: Artboard or other component
     * Returns: all artboards if no artboard is selected or the selected artboards
     */
-    getElement(type, selectedOnly = true) {
-        var artboards = [];
-        var artboardsAll = [];
-        this.page.layers.forEach(layer=> {
+    getElement(type, selectedOnly = true, list = this.page) {
+        var selectedElements = [];
+        var allElements = [];
+        list.layers.forEach(layer=> {
             if (layer.type == type) {
-                artboardsAll.push(layer);
+                allElements.push(layer);
                 if (layer.selected && selectedOnly) {
-                    artboards.push(layer);
+                    selectedElements.push(layer);
                 }
             }
         });
-        if (artboards.length != 0) { return artboards; } else { return artboardsAll; }
+        if (selectedElements.length != 0 && selectedOnly) { return selectedElements; } else { return allElements; }
     }
     
     

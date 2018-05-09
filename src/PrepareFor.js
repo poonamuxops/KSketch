@@ -18,8 +18,7 @@ export default function(context) {
         if (value == options[0]) {
             mysketch.prepareForPrototype();
         } else {
-                var confluence_template = sketch.UI.getStringFromUser('Which Confluence column layout is desired', 'example: 1, 2, 3');
-                mysketch.prepareForDocumentation(confluence_template);
+                mysketch.prepareForDocumentation();
         }
     }
 

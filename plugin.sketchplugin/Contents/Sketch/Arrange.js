@@ -293,8 +293,6 @@ var Component = function () {
                     col++;
                     if (index == 0) {
                         maxHeight = artboards[index].frame.height;
-                        x = artboards[index].index == 1 ? 0 : artboards[index].x;
-                        x = artboards[index].index == 1 ? 0 : artboards[index].y;
                     } else {
                         if (artboards[index].frame.height > maxHeight) {
                             maxHeight = artboards[index].frame.height;
@@ -314,8 +312,8 @@ var Component = function () {
         value: function () {
             function prepareForDocumentation() {
                 this.resizeArtboard(1200, 700);
-                //this.showAnnotations();
                 this.arrangeArtboards();
+                this.showAnnotations();
             }
 
             return prepareForDocumentation;
@@ -324,7 +322,7 @@ var Component = function () {
         key: 'prepareForPrototype',
         value: function () {
             function prepareForPrototype() {
-                //this.hideAnnotations();
+                this.hideAnnotations();
                 this.ArtboardToFit();
                 this.arrangeArtboards();
             }
@@ -342,24 +340,14 @@ var Component = function () {
         key: 'hideAnnotations',
         value: function () {
             function hideAnnotations() {
-                /*var annotations = this.getAnnotations();
-                for (annotation in annotations) {
-                    if (annotations[annotation].frame.width > 1 && annotations[annotation].frame.height > 1) {
-                        annotations[annotation].frame = {width: annotations[annotation].frame.width/1000000, height: annotations[annotation].frame.height/1000000};
-                    }
-                }*/
-                this.page.layers.forEach(function (layer) {
-                    if (layer.layers) {
-                        layer.layers.forEach(function (element) {
-                            //if (element.name.includes("Annotation")) {
-                            if (!element.hidden) {
-                                log('hello');
-                            } else {
-                                log('what');
-                            }
-                            //}
-                        });
-                    }
+                var ungroupedAnnotations = this.getAnnotations();
+                var groupedAnnotations = this.findElement('Annotations');
+
+                groupedAnnotations.forEach(function (annotation) {
+                    annotation.hidden = true;
+                });
+                ungroupedAnnotations.forEach(function (annotation) {
+                    annotation.hidden = true;
                 });
             }
 
@@ -374,12 +362,17 @@ var Component = function () {
         key: 'showAnnotations',
         value: function () {
             function showAnnotations() {
-                var annotations = this.getAnnotations();
-                for (annotation in annotations) {
-                    if (annotations[annotation].frame.width < 1 && annotations[annotation].frame.height < 1) {
-                        annotations[annotation].frame = { width: annotations[annotation].frame.width * 1000000, height: annotations[annotation].frame.height * 1000000 };
-                    }
-                }
+                var ungroupedAnnotations = this.getAnnotations();
+                var groupedAnnotations = this.findElement('Annotations');
+
+                groupedAnnotations.forEach(function (annotation) {
+                    annotation.hidden = false;
+                    annotation.moveToFront();
+                });
+                ungroupedAnnotations.forEach(function (annotation) {
+                    annotation.hidden = false;
+                    annotation.moveToFront();
+                });
             }
 
             return showAnnotations;
@@ -427,6 +420,22 @@ var Component = function () {
             return getAnnotations;
         }()
 
+        /* Finds a layer by name
+        * Returns: array of results
+        */
+
+    }, {
+        key: 'findElement',
+        value: function () {
+            function findElement(name) {
+                var results = [];
+                results = this.document.getLayersNamed(name);
+                return results;
+            }
+
+            return findElement;
+        }()
+
         /* Get Selected Element
         * type: Artboard or other component
         * Returns: all artboards if no artboard is selected or the selected artboards
@@ -437,21 +446,22 @@ var Component = function () {
         value: function () {
             function getElement(type) {
                 var selectedOnly = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+                var list = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : this.page;
 
-                var artboards = [];
-                var artboardsAll = [];
-                this.page.layers.forEach(function (layer) {
+                var selectedElements = [];
+                var allElements = [];
+                list.layers.forEach(function (layer) {
                     if (layer.type == type) {
-                        artboardsAll.push(layer);
+                        allElements.push(layer);
                         if (layer.selected && selectedOnly) {
-                            artboards.push(layer);
+                            selectedElements.push(layer);
                         }
                     }
                 });
-                if (artboards.length != 0) {
-                    return artboards;
+                if (selectedElements.length != 0 && selectedOnly) {
+                    return selectedElements;
                 } else {
-                    return artboardsAll;
+                    return allElements;
                 }
             }
 
