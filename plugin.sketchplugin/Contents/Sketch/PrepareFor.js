@@ -318,22 +318,32 @@ var Component = function () {
 
             return arrangeArtboards;
         }()
+
+        /* Prepare For Documentation
+        * Prepares the selected artboards or all the artboards in the Sketch document for the Confluence documentation
+        */
+
     }, {
         key: 'prepareForDocumentation',
         value: function () {
             function prepareForDocumentation() {
                 this.resizeArtboard(1200, 700);
                 this.arrangeArtboards();
-                this.showAnnotations();
+                this.manageAnnotations();
             }
 
             return prepareForDocumentation;
         }()
+
+        /* Prepare For Prototype
+        * Prepares the selected artboards or all the artboards in the Sketch document for prototyping
+        */
+
     }, {
         key: 'prepareForPrototype',
         value: function () {
             function prepareForPrototype() {
-                this.hideAnnotations();
+                this.manageAnnotations(true);
                 this.ArtboardToFit();
                 this.arrangeArtboards();
             }
@@ -343,50 +353,28 @@ var Component = function () {
 
         /* ----------------- Accessors ------------------ */
 
-        /* Hide Annotations 
-        * Hides all annotations from all artboards or from selected artboards only
-        */
-
-    }, {
-        key: 'hideAnnotations',
-        value: function () {
-            function hideAnnotations() {
-                var ungroupedAnnotations = this.getAnnotations();
-                var groupedAnnotations = this.findElement('Annotations');
-
-                groupedAnnotations.forEach(function (annotation) {
-                    annotation.hidden = true;
-                });
-                ungroupedAnnotations.forEach(function (annotation) {
-                    annotation.hidden = true;
-                });
-            }
-
-            return hideAnnotations;
-        }()
-
         /* Show Annotations
         * Shows all annotations from all artboards or from selected artboards only
         */
 
     }, {
-        key: 'showAnnotations',
+        key: 'manageAnnotations',
         value: function () {
-            function showAnnotations() {
+            function manageAnnotations() {
+                var hidden = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
                 var ungroupedAnnotations = this.getAnnotations();
                 var groupedAnnotations = this.findElement('Annotations');
-
-                groupedAnnotations.forEach(function (annotation) {
-                    annotation.hidden = false;
-                    annotation.moveToFront();
-                });
-                ungroupedAnnotations.forEach(function (annotation) {
-                    annotation.hidden = false;
-                    annotation.moveToFront();
+                var annotations = ungroupedAnnotations.concat(groupedAnnotations);
+                annotations.forEach(function (annotation) {
+                    annotation.hidden = hidden;
+                    if (!hidden) {
+                        annotation.moveToFront();
+                    };
                 });
             }
 
-            return showAnnotations;
+            return manageAnnotations;
         }()
 
         /* Adjust Artboard to fit the content of its children

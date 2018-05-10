@@ -152,51 +152,39 @@ class Component {
         });
     }
     
+    
+    /* Prepare For Documentation
+    * Prepares the selected artboards or all the artboards in the Sketch document for the Confluence documentation
+    */
     prepareForDocumentation() {
         this.resizeArtboard(1200, 700);
         this.arrangeArtboards();
-        this.showAnnotations();
+        this.manageAnnotations();
     }
     
+    /* Prepare For Prototype
+    * Prepares the selected artboards or all the artboards in the Sketch document for prototyping
+    */
     prepareForPrototype() {
-        this.hideAnnotations();
+        this.manageAnnotations(true);
         this.ArtboardToFit();
         this.arrangeArtboards();
     }
     
     /* ----------------- Accessors ------------------ */
     
-    /* Hide Annotations 
-    * Hides all annotations from all artboards or from selected artboards only
-    */
-    hideAnnotations() {
-        var ungroupedAnnotations = this.getAnnotations();
-        var groupedAnnotations = this.findElement('Annotations');
-        
-        groupedAnnotations.forEach(annotation => {
-            annotation.hidden = true;
-        }); 
-        ungroupedAnnotations.forEach(annotation => {
-            annotation.hidden = true;
-        });
-    }
-    
     
     /* Show Annotations
     * Shows all annotations from all artboards or from selected artboards only
     */
-    showAnnotations() {
+    manageAnnotations(hidden = false) {
         var ungroupedAnnotations = this.getAnnotations();
         var groupedAnnotations = this.findElement('Annotations');
-        
-        groupedAnnotations.forEach(annotation => {
-            annotation.hidden = false;
-            annotation.moveToFront();
-        }); 
-        ungroupedAnnotations.forEach(annotation => {
-            annotation.hidden = false;
-            annotation.moveToFront();
-        });       
+        var annotations = ungroupedAnnotations.concat(groupedAnnotations);
+        annotations.forEach(annotation => {
+            annotation.hidden = hidden;
+            if (!hidden) { annotation.moveToFront() };
+        });   
     }
     
     
