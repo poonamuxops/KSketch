@@ -110,6 +110,7 @@ exports['default'] = function (context) {
     //mysketch.arrangeArtboards();
     //mysketch.findElement('Annotations');
     //mysketch.groupAnnotations();
+    sketch.UI.message("Hello world");
 };
 
 /* Main.js 
