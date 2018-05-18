@@ -110,7 +110,11 @@ exports['default'] = function (context) {
     //mysketch.arrangeArtboards();
     //mysketch.findElement('Annotations');
     //mysketch.groupAnnotations();
+<<<<<<< Updated upstream
     sketch.UI.message("Hello world");
+=======
+    sketch.UI.message('Hello World yet again');
+>>>>>>> Stashed changes
 };
 
 /* Main.js 
