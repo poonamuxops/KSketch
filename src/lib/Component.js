@@ -6,6 +6,8 @@ const Shape = sketch.Shape;
 const Style = sketch.Style;
 const Text = sketch.Text;
 const Group = sketch.Group;
+const Document = sketch.Document;
+var SymbolInstance = sketch.SymbolInstance
 
 class Component {
     
@@ -233,10 +235,10 @@ class Component {
     * type: Artboard or other component
     * Returns: all artboards if no artboard is selected or the selected artboards
     */
-    getElement(type, selectedOnly = true, list = this.page) {
+    getElement(type, selectedOnly = true, list = this.page.layers) {
         var selectedElements = [];
         var allElements = [];
-        list.layers.forEach(layer=> {
+        list.forEach(layer=> {
             if (layer.type == type) {
                 allElements.push(layer);
                 if (layer.selected && selectedOnly) {
